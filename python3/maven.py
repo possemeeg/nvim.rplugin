@@ -46,6 +46,18 @@ class MavenPlugin(NvimPlugin):
             count += 1
         self.echo('{} buffers removed'.format(count))
 
+    @neovim.command('Mpbuff')
+    def mpbuff(self):
+        mvn_out = []
+        for line in self.nvim.current.buffer:
+            self.echo('building')
+            self._maven_extract(line, lambda sev, file, line, col, msg:
+                    mvn_out.append({'type': sev[0:1], 'lnum': line, 'filename':file, 'col': col, 'valid': 1, 'vcol': 0,
+                        'nr': -1, 'type': '', 'pattern': '', 'text': '{}: {}'.format(sev, msg)}))
+        self.nvim.funcs.setqflist(mvn_out)
+        self.nvim.command('copen')
+
+
     @neovim.autocmd('VimLeavePre', sync=True)
     def automkillout(self):
         self.mkillout()
