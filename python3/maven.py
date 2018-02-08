@@ -57,6 +57,16 @@ class MavenPlugin(NvimPlugin):
         self.nvim.funcs.setqflist(mvn_out)
         self.nvim.command('copen')
 
+    @neovim.command('Mpreg', sync=True)
+    def mpbuff(self):
+        mvn_out = []
+        lines = self.nvim.funcs.getreg('+')
+        for line in lines.splitlines():
+            self._maven_extract(line, lambda sev, file, line, col, msg:
+                    mvn_out.append({'type': sev[0:1], 'lnum': line, 'filename':file, 'col': col, 'valid': 1, 'vcol': 0,
+                        'nr': -1, 'type': '', 'pattern': '', 'text': '{}: {}'.format(sev, msg)}))
+        self.nvim.funcs.setqflist(mvn_out)
+        self.nvim.command('copen')
 
     @neovim.autocmd('VimLeavePre', sync=True)
     def automkillout(self):
