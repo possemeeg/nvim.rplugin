@@ -63,10 +63,22 @@ class JavaPlugin(NvimPlugin):
     def jgetset(self):
         self._prop_template(GET_SET_TEMPLATE)
 
+    @neovim.command('Jtest')
+    def jtest(self):
+        orig = path.realpath(self.nvim.current.buffer.name)
+        if 'src/main/java' in orig:
+            fullpath = re.sub(r'.java$', 'Test.java', re.sub('src/main/java', 'src/test/java', orig))
+        elif 'src/test/java' in orig: 
+            fullpath = re.sub(r'Test.java$', '.java', re.sub('src/test/java', 'src/main/java', orig))
+        else:
+            self.echo('''Invalid source file {} - can't switch between test and main'''.format(orig))
+        newbuffer = self.getorcreatebuffer(fullpath)
+        if newbuffer:
+            self.nvim.current.buffer = newbuffer
+
     @neovim.autocmd('BufEnter', pattern='*.java', eval='expand("<afile>")', sync=False)
     def on_bufenter(self, filename):
-        bs = util.RootSeeker(path.realpath(filename), 'pom.xml').backseek(True)
-        bs = bs if bs else util.RootSeeker(filename, 'main/java').backseek(True)
+        bs = util.RootSeeker(path.realpath(filename)).backseek(['pom.xml', 'main/java'], False)
         if bs:
             self.nvim.options['path'] = ','.join(util.LeafDirectoryFinder(bs, re.compile(r'.*java$')).alldirs())
 

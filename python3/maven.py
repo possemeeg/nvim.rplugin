@@ -90,9 +90,4 @@ class MavenPlugin(NvimPlugin):
             callback(match.group(1), match.group(2), match.group(3), match.group(4), match.group(5))
 
     def _get_or_create_build_buffer(self, cwd):
-        fullname = path.realpath(path.join(cwd,MVN_BUILD_BUFFER_NAME))
-        outbuffer = self.findbuffer(fullname)
-        if not outbuffer:
-            self.nvim.command('badd {}'.format(fullname))
-            outbuffer = self.findbuffer(fullname)
-        return outbuffer
+        return self._get_or_create_build_buffer(path.realpath(path.join(cwd,MVN_BUILD_BUFFER_NAME)))
