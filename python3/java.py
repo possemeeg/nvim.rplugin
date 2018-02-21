@@ -76,6 +76,10 @@ class JavaPlugin(NvimPlugin):
         if newbuffer:
             self.nvim.current.buffer = newbuffer
 
+    @neovim.command('Jpath')
+    def jpath(self):
+        self.on_bufenter(self.nvim.current.buffer.name)
+
     @neovim.autocmd('BufEnter', pattern='*.java', eval='expand("<afile>")', sync=False)
     def on_bufenter(self, filename):
         bs = util.RootSeeker(path.realpath(filename)).backseek(['pom.xml', 'main/java'], False)
