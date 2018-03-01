@@ -16,9 +16,22 @@ class Buffers(NvimPlugin):
         super(Buffers,self).__init__(nvim)
 
     @neovim.command('Bdh')
-    def bclh(self):
-        self.nvim.command(Non)
-
+    def bdh(self):
+        count = 0
+        failed = 0
         for buff in self.nvim.buffers:
-            if buff.hidden:
-                self.nvim.command('bd {}'.format(buff.number))
+            info = self.nvim.funcs.getbufinfo(buff.number)
+            if not info[0]['windows']:
+                try:
+                    self.nvim.command('bd {}'.format(buff.number))
+                    count += 1
+                except:
+                    self.echo('bd failed for {}'.format(buff.number))
+                    failed += 1
+        self.echo('{} buffers deleted. {} failed'.format(count, failed))
+
+    @neovim.command('Buffs')
+    def bclh(self):
+        self.nvim.current.buffer.append(['{}'.format(self.nvim.funcs.getbufinfo(buff.number)) for buff in self.nvim.buffers], 0)
+
+

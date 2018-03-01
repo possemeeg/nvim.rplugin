@@ -76,6 +76,7 @@ class JavaPlugin(NvimPlugin):
         if newbuffer:
             self.nvim.current.buffer = newbuffer
 
+
     @neovim.command('Jpath')
     def jpath(self):
         self.on_bufenter(self.nvim.current.buffer.name)
