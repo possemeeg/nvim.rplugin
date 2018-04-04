@@ -9,21 +9,27 @@ from os import path
 sys.path.append(path.dirname(path.realpath(path.join(os.getcwd(), path.expanduser(__file__)))))
 from util import NvimPlugin
 
-MVN_ERROR_REGEX = re.compile(r'^\[(ERROR|INFO|WARNING)\]\s+([^:\[]+):*\[([0-9]+),([0-9]+)\]\s*(.*)$')
-CHECKSTYLE_ERROR_REGEX = re.compile(r'^\[(ERROR|INFO|WARNING)\]\s+([^:\[]+):*([0-9]+):([0-9]+){0,1}[:\s]*(.*)$')
+MVN_ERROR_REGEX = re.compile(r'^\[(?P<type>ERROR|INFO|WARNING)\]\s+(?P<file>[^:\[]+):*\[(?P<line>[0-9]+),(?P<col>[0-9]+)\]\s*(?P<msg>.*)$')
+CHECKSTYLE_ERROR_REGEX_8 = re.compile(r'^\[(?P<type>ERROR|INFO|WARNING)\]\s+(?P<file>[^:\[]+):*(?P<line>[0-9]+):(?P<col>[0-9]+){0,1}[:\s]*(?P<msg>.*)$')
+CHECKSTYLE_ERROR_REGEX_7 = re.compile(r'^(?P<file>[^:\[]+):*(?P<line>[0-9]+):(?P<col>[0-9]+){0,1}[:\s]*(?P<msg>.*)$')
+ALL = [MVN_ERROR_REGEX, CHECKSTYLE_ERROR_REGEX_8, CHECKSTYLE_ERROR_REGEX_7]
 
 @neovim.plugin
 class QuickFix(NvimPlugin):
     def __init__(self, nvim):
         super(QuickFix,self).__init__(nvim)
 
-    @neovim.command('Prmvn', sync=True)
-    def prmvn(self):
-        self._preg(QuickFix._maven_extract)
+    #@neovim.command('Prmvn', sync=True)
+    #def prmvn(self):
+    #    self._preg(QuickFix._maven_extract)
 
-    @neovim.command('Prcks', sync=True)
-    def prcks(self):
-        self._preg(QuickFix._checkstyle_extract)
+    #@neovim.command('Prcks', sync=True)
+    #def prcks(self):
+    #    self._preg(QuickFix._checkstyle_extract)
+
+    @neovim.command('Pr', sync=True)
+    def pr(self):
+        self._preg(QuickFix._all_extract)
 
     def _preg(self, fn):
         mvn_out = []
@@ -35,18 +41,26 @@ class QuickFix(NvimPlugin):
         self.nvim.funcs.setqflist(mvn_out)
         self.nvim.command('copen')
 
-    @staticmethod
-    def _maven_extract(line, callback):
-        match = MVN_ERROR_REGEX.match(line)
-        if match:
-            callback(match.group(1), match.group(2), match.group(3), match.group(4), match.group(5))
+    #@staticmethod
+    #def _maven_extract(line, callback):
+    #    match = MVN_ERROR_REGEX.match(line)
+    #    if match:
+    #        callback(match.group(1), match.group(2), match.group(3), match.group(4), match.group(5))
+
+    #@staticmethod
+    #def _checkstyle_extract(line, callback):
+    #    match = CHECKSTYLE_ERROR_REGEX_8.match(line)
+    #    if match:
+    #        callback(match.group(1), match.group(2), match.group(3), match.group(4), match.group(5))
 
     @staticmethod
-    def _checkstyle_extract(line, callback):
-        match = CHECKSTYLE_ERROR_REGEX.match(line)
-        if match:
-            callback(match.group(1), match.group(2), match.group(3), match.group(4), match.group(5))
-
+    def _all_extract(line, callback):
+        for regex in ALL:
+            match = regex.match(line)
+            if match:
+                matchdict = match.groupdict();
+                callback(matchdict['type'] if 'type' in matchdict else 'ERROR', matchdict['file'], matchdict['line'], matchdict['col'], matchdict['msg'])
+    
 if __name__ == '__main__':
     mvnline = "[ERROR] /home/peter/pmg/dev/javasimple/src/main/java/com/possemeeg/javatest/App.java:[25,15] ';' expected"
 
