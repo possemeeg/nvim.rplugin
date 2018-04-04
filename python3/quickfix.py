@@ -19,14 +19,6 @@ class QuickFix(NvimPlugin):
     def __init__(self, nvim):
         super(QuickFix,self).__init__(nvim)
 
-    #@neovim.command('Prmvn', sync=True)
-    #def prmvn(self):
-    #    self._preg(QuickFix._maven_extract)
-
-    #@neovim.command('Prcks', sync=True)
-    #def prcks(self):
-    #    self._preg(QuickFix._checkstyle_extract)
-
     @neovim.command('Pr', sync=True)
     def pr(self):
         self._preg(QuickFix._all_extract)
@@ -40,18 +32,6 @@ class QuickFix(NvimPlugin):
                         'nr': -1, 'type': '', 'pattern': '', 'text': '{}: {}'.format(sev, msg)}))
         self.nvim.funcs.setqflist(mvn_out)
         self.nvim.command('copen')
-
-    #@staticmethod
-    #def _maven_extract(line, callback):
-    #    match = MVN_ERROR_REGEX.match(line)
-    #    if match:
-    #        callback(match.group(1), match.group(2), match.group(3), match.group(4), match.group(5))
-
-    #@staticmethod
-    #def _checkstyle_extract(line, callback):
-    #    match = CHECKSTYLE_ERROR_REGEX_8.match(line)
-    #    if match:
-    #        callback(match.group(1), match.group(2), match.group(3), match.group(4), match.group(5))
 
     @staticmethod
     def _all_extract(line, callback):
