@@ -33,8 +33,15 @@ class JavaPlugin(NvimPlugin):
         super(JavaPlugin,self).__init__(nvim)
         self.indent = self.nvim.options['shiftwidth'] * ' '
 
+    @neovim.command('Jpack')
+    def jpack(self):
+        self._jsetup(False)
+
     @neovim.command('Jclass')
     def jclass(self):
+        self._jsetup(True)
+
+    def _jsetup(self, include_class):
         path_match = PATH_MATCHER.search(self.nvim.current.buffer.name)
         if not path_match:
             self.echo('No class and package match for path: {}'.format(self.nvim.current.buffer.name))
@@ -42,14 +49,14 @@ class JavaPlugin(NvimPlugin):
         relative_path = path_match.group(2)
         sep = relative_path.rfind('/')
         package_name = relative_path[:sep].replace('/','.')
-        class_name = relative_path[sep+1:-5]
-        
-        self.nvim.current.buffer.append([
-            'package {};'.format(package_name),
-            '',
-            'public class {}'.format(class_name) + ' {',
-            '',
-            '}'], 0)
+
+        lines = ['package {};'.format(package_name)]
+
+        if include_class:
+            class_name = relative_path[sep+1:-5]
+            lines.extend(('', 'public class {}'.format(class_name) + ' {', '', '}'))
+
+        self.nvim.current.buffer.append(lines, 0)
 
     @neovim.command('Jget')
     def jget(self):
