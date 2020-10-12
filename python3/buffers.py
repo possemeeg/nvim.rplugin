@@ -28,9 +28,8 @@ class Buffers(NvimPlugin):
                     self.nvim.command('bd {}'.format(buff.number))
                     count += 1
                 except:
-                    self.echo('bd failed for {}'.format(buff.number))
-                    failed += 1
-        self.echo('{} buffers deleted. {} failed'.format(count, failed))
+                    pass
+        self.echo(f'{count} buffers deleted.')
 
     @neovim.command('Bufs', nargs='*')
     def bclh(self, nargs):

@@ -12,7 +12,10 @@ from util import NvimPlugin
 MVN_ERROR_REGEX = re.compile(r'^\[(?P<type>ERROR|INFO|WARNING)\]\s+(?P<file>[^:\[]+):*\[(?P<line>[0-9]+),(?P<col>[0-9]+)\]\s*(?P<msg>.*)$')
 CHECKSTYLE_ERROR_REGEX_8 = re.compile(r'^\[(?P<type>ERROR|INFO|WARNING)\]\s+(?P<file>[^:\[]+):*(?P<line>[0-9]+):(?P<col>[0-9]+){0,1}[:\s]*(?P<msg>.*)$')
 CHECKSTYLE_ERROR_REGEX_7 = re.compile(r'^(?P<file>[^:\[]+):*(?P<line>[0-9]+):(?P<col>[0-9]+){0,1}[:\s]*(?P<msg>.*)$')
-ALL = [MVN_ERROR_REGEX, CHECKSTYLE_ERROR_REGEX_8, CHECKSTYLE_ERROR_REGEX_7]
+PYTHON_STACK = re.compile(r'^\s*File\s"(?P<file>[^"]+)",\sline\s(?P<line>[0-9]+)(,\s){0,1}(?P<msg>.*)$')
+PYTHON_PDB_STACK = re.compile(r'^>{0,1}\s+(?P<file>[^\(]+)\((?P<line>[0-9]+)\)(?P<msg>.*)$')
+PYLINT = re.compile(r'^[^:]+:(?P<line>[0-9]+):(?P<col>[0-9]+)[:\s]*(?P<msg>.*)$')
+ALL = [MVN_ERROR_REGEX, CHECKSTYLE_ERROR_REGEX_8, CHECKSTYLE_ERROR_REGEX_7, PYTHON_STACK, PYTHON_PDB_STACK, PYLINT]
 
 @neovim.plugin
 class QuickFix(NvimPlugin):
@@ -39,19 +42,33 @@ class QuickFix(NvimPlugin):
             match = regex.match(line)
             if match:
                 matchdict = match.groupdict();
-                callback(matchdict['type'] if 'type' in matchdict else 'ERROR', matchdict['file'], matchdict['line'], matchdict['col'], matchdict['msg'])
+                callback(matchdict.get('type', ''), \
+                        matchdict.get('file', ''), \
+                        matchdict.get('line', ''), \
+                        matchdict.get('col', ''), \
+                        matchdict.get('msg', ''))
+                return
     
 if __name__ == '__main__':
     mvnline = "[ERROR] /home/peter/pmg/dev/javasimple/src/main/java/com/possemeeg/javatest/App.java:[25,15] ';' expected"
 
-    QuickFix._maven_extract(mvnline, lambda sec, file, line, col, msg:
+    QuickFix(None)._all_extract(mvnline, lambda sec, file, line, col, msg:
             print("mvn: sev: {}, file: {}, line: {}, col: {}, msg: {}".format(sec, file, line, col, msg)))
 
     cksline1 = "[ERROR] /home/peter/pmg/dev/javasimple/src/main/java/com/possemeeg/javatest/App.java:25: ';' expected"
-    QuickFix._checkstyle_extract(cksline1, lambda sec, file, line, col, msg:
+    QuickFix(None)._all_extract(cksline1, lambda sec, file, line, col, msg:
             print("cks1: sev: {}, file: {}, line: {}, col: {}, msg: {}".format(sec, file, line, col, msg)))
 
     cksline2 = "[ERROR] /home/peter/pmg/dev/javasimple/src/main/java/com/possemeeg/javatest/App.java:25:15: ';' expected"
-    QuickFix._checkstyle_extract(cksline2, lambda sec, file, line, col, msg:
+    QuickFix(None)._all_extract(cksline2, lambda sec, file, line, col, msg:
             print("cks2: sev: {}, file: {}, line: {}, col: {}, msg: {}".format(sec, file, line, col, msg)))
 
+    cksline3 = '  File "/home/peter/Development/pmg/clubresults/src/python/ve3.7/lib/python3.7/site-packages/flask/app.py", line 2309, in __call__'
+    QuickFix(None)._all_extract(cksline3, lambda sec, file, line, col, msg:
+            print("cks3: sev: {}, file: {}, line: {}, col: {}, msg: {}".format(sec, file, line, col, msg)))
+  
+    cksline4 = '> /home/peter/Development/pmg/clubresults/src/python/ve3.7/lib/python3.7/site-packages/flask_oidc/__init__.py(657)_oidc_callback() '
+    QuickFix(None)._all_extract(cksline4, lambda sec, file, line, col, msg:
+            print("cks4: sev: {}, file: {}, line: {}, col: {}, msg: {}".format(sec, file, line, col, msg)))
+  
+    #return self.wsgi_app(environ, start_response)
