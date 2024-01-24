@@ -12,7 +12,7 @@ from util import NvimPlugin
 MVN_ERROR_REGEX = re.compile(r'^\[(?P<type>ERROR|INFO|WARNING)\]\s+(?P<file>[^:\[]+):*\[(?P<line>[0-9]+),(?P<col>[0-9]+)\]\s*(?P<msg>.*)$')
 CHECKSTYLE_ERROR_REGEX_8 = re.compile(r'^\[(?P<type>ERROR|INFO|WARNING)\]\s+(?P<file>[^:\[]+):*(?P<line>[0-9]+):(?P<col>[0-9]+){0,1}[:\s]*(?P<msg>.*)$')
 CHECKSTYLE_ERROR_REGEX_7 = re.compile(r'^(?P<file>[^:\[]+):*(?P<line>[0-9]+):(?P<col>[0-9]+){0,1}[:\s]*(?P<msg>.*)$')
-PYTHON_STACK = re.compile(r'^\s*File\s"(?P<file>[^"]+)",\sline\s(?P<line>[0-9]+)(,\s){0,1}(?P<msg>.*)$')
+PYTHON_STACK = re.compile(r'^\s*\|{0,1}\s*File\s"(?P<file>[^"]+)",\sline\s(?P<line>[0-9]+)(,\s){0,1}(?P<msg>.*)$')
 PYTHON_PDB_STACK = re.compile(r'^>{0,1}\s+(?P<file>[^\(]+)\((?P<line>[0-9]+)\)(?P<msg>.*)$')
 PYLINT = re.compile(r'^[^:]+:(?P<line>[0-9]+):(?P<col>[0-9]+)[:\s]*(?P<msg>.*)$')
 ALL = [MVN_ERROR_REGEX, CHECKSTYLE_ERROR_REGEX_8, CHECKSTYLE_ERROR_REGEX_7, PYTHON_STACK, PYTHON_PDB_STACK, PYLINT]
